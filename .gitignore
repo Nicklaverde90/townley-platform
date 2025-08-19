@@ -27,3 +27,6 @@ client/.env
 # Build artifacts
 coverage/
 build/
+
+node_modules/
+
