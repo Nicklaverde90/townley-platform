@@ -1,0 +1,5 @@
+// UPDATE NOTE:
+// In your WorkOrders page, import and wire:
+// import ConfirmDialog from "../components/ConfirmDialog";
+// import { bulkHardDelete } from "../lib/api-admin";
+// Add checkbox selection state and a "Bulk Delete" button visible to admins.
