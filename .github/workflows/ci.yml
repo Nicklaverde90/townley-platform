@@ -1,0 +1,45 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  web:
+    name: Web build & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # If package.json exists, these will run; otherwise they'll be no-ops
+      - run: npm ci --ignore-scripts --if-present
+      - run: npm run lint --if-present
+      - run: npm test --if-present
+      - run: npm run build --if-present
+
+  compose:
+    name: Docker Compose build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate compose file
+        run: |
+          if [ -f docker-compose.yml ]; then
+            docker compose -f docker-compose.yml config 1>/dev/null
+            echo "docker-compose.yml is valid"
+          else
+            echo "No docker-compose.yml found, skipping."
+          fi
+
+      - name: Build images (no push)
+        if: ${{ hashFiles('docker-compose.yml') != '' }}
+        run: |
+          docker compose build --pull

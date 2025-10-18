@@ -1,0 +1,11 @@
+name: Feature request
+description: Suggest an idea
+labels: ["type:enhancement"]
+body:
+  - type: textarea
+    id: value
+    attributes: { label: Value / who benefits }
+    validations: { required: true }
+  - type: textarea
+    id: acceptance
+    attributes: { label: Acceptance criteria }

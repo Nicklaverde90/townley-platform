@@ -1,0 +1,12 @@
+name: Bug report
+description: Report a problem
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: Expected behavior }
+    validations: { required: true }
