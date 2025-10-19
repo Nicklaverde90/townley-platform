@@ -1,0 +1,32 @@
+# Node / Vite
+client/node_modules/
+client/dist/
+client/.vite/
+
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.ruff_cache/
+
+# Bytecode / OS
+*.pyc
+.DS_Store
+
+# Env & secrets (managed in CI or vault)
+.env
+.env.*
+backend/.env
+client/.env
+
+# Docker artifacts
+*.log
+*.pid
+
+# Build artifacts
+coverage/
+build/
+
+node_modules/
+

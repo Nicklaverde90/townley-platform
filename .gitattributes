@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+# Shell / scripts
+*.sh   text eol=lf
+*.bash text eol=lf
+
+# Windows scripts
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Images/binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+
+# Node lock files preserved as-is
+package-lock.json -text
+yarn.lock        -text
+pnpm-lock.yaml   -text
