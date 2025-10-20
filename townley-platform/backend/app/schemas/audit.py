@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
+
 class AuditEntry(BaseModel):
     id: int
     record_no: int
@@ -12,6 +13,7 @@ class AuditEntry(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class AuditListResponse(BaseModel):
     items: List[AuditEntry]

@@ -6,7 +6,7 @@ Patch: RBAC Roles + Audit Export UI Presets + Live Tail (SSE)
       - RBAC roles (viewer/editor/admin) stored on Users.role (default 'viewer')
       - Backend dependency `require_role(min_role)` and token validation helper for SSE
       - Audit stream via Server-Sent Events: GET /api/audit/stream
-      - Frontend: 
+      - Frontend:
           * Audit Log UI upgraded with date presets and saved filters (localStorage)
           * New "Audit Live" page with real-time tail of audit events (SSE)
           * ProtectedRoute upgraded to accept `minRole`

@@ -40,7 +40,9 @@ def ensure_password(password: str | None) -> str:
     return first
 
 
-def make_admin(db: Session, email: str, password: str, full_name: str | None) -> tuple[User, str]:
+def make_admin(
+    db: Session, email: str, password: str, full_name: str | None
+) -> tuple[User, str]:
     user = db.query(User).filter(User.email == email).first()
     hashed = get_password_hash(password)
 

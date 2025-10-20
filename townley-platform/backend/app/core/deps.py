@@ -17,7 +17,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 def _decode_token(token: str) -> tuple[Optional[str], Optional[int]]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         return payload.get("sub"), payload.get("exp")
     except JWTError as exc:  # pragma: no cover - bubbling through HTTPException
         raise HTTPException(
@@ -27,7 +29,9 @@ def _decode_token(token: str) -> tuple[Optional[str], Optional[int]]:
         ) from exc
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

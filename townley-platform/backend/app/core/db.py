@@ -4,13 +4,12 @@ from contextlib import contextmanager
 from typing import Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from app.core.config import settings
 
 
-class Base(DeclarativeBase):
-    """Base class for SQLAlchemy models."""
+Base = declarative_base()
 
 
 engine = create_engine(settings.database_url, future=True, pool_pre_ping=True)

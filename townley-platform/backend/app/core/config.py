@@ -10,7 +10,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application configuration sourced from environment variables."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+    )
 
     # App / security
     app_name: str = "Townley API"
@@ -38,7 +40,9 @@ class Settings(BaseSettings):
         if self.db_encrypt:
             query_params.append(f"Encrypt={self.db_encrypt}")
         if self.db_trust_server_certificate:
-            query_params.append(f"TrustServerCertificate={self.db_trust_server_certificate}")
+            query_params.append(
+                f"TrustServerCertificate={self.db_trust_server_certificate}"
+            )
         query = "&".join(query_params)
         return f"mssql+pyodbc://{user}:{password}@{self.db_server}:{self.db_port}/{self.db_name}?{query}"
 

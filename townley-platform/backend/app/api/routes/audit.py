@@ -1,27 +1,33 @@
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from datetime import datetime
-import csv, io
+import csv
+import io
 
 from app.core.db import get_db
 from app.core.admin_deps import require_admin  # assumes exist from previous patch
-from app.models.workorder_audit import WorkOrderAudit  # assumes exist from previous patch
-from app.schemas.audit import AuditListResponse, AuditEntry
+from app.models.workorder_audit import (
+    WorkOrderAudit,
+)  # assumes exist from previous patch
+from app.schemas.audit import AuditListResponse
 
 router = APIRouter(prefix="/api/audit", tags=["audit"])
 
+
 @router.get("/workorders", response_model=AuditListResponse)
 def list_audit_workorders(
-    action: Optional[str] = Query(None, description="Filter by action: create|update|delete|import"),
+    action: Optional[str] = Query(
+        None, description="Filter by action: create|update|delete|import"
+    ),
     record_no: Optional[int] = Query(None),
     start: Optional[datetime] = Query(None, description="ISO datetime start"),
     end: Optional[datetime] = Query(None, description="ISO datetime end"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
-    _admin = Depends(require_admin),
+    _admin=Depends(require_admin),
 ):
     q = db.query(WorkOrderAudit)
     clauses = []
@@ -42,9 +48,8 @@ def list_audit_workorders(
         .limit(page_size)
         .all()
     )
-    return AuditListResponse(
-        items=items, total=total, page=page, page_size=page_size
-    )
+    return AuditListResponse(items=items, total=total, page=page, page_size=page_size)
+
 
 @router.get("/workorders/export")
 def export_audit_workorders_csv(
@@ -53,7 +58,7 @@ def export_audit_workorders_csv(
     start: Optional[datetime] = Query(None),
     end: Optional[datetime] = Query(None),
     db: Session = Depends(get_db),
-    _admin = Depends(require_admin),
+    _admin=Depends(require_admin),
 ):
     q = db.query(WorkOrderAudit)
     clauses = []
@@ -72,7 +77,16 @@ def export_audit_workorders_csv(
     writer = csv.writer(output)
     writer.writerow(["Id", "RecordNo", "Action", "ChangedBy", "ChangedAt", "Details"])
     for r in rows:
-        writer.writerow([r.id, r.record_no, r.action, r.changed_by or "", r.changed_at.isoformat(), r.details or ""])
+        writer.writerow(
+            [
+                r.id,
+                r.record_no,
+                r.action,
+                r.changed_by or "",
+                r.changed_at.isoformat(),
+                r.details or "",
+            ]
+        )
     data = output.getvalue()
     headers = {
         "Content-Type": "text/csv; charset=utf-8",

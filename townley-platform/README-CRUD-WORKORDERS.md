@@ -12,7 +12,7 @@ Apply steps (repo root):
   2) Ensure frontend deps: `docker compose exec web npm i react-hook-form zod`
   3) Rebuild & restart: `docker compose up --build -d`
   4) Migrate DB: `docker compose exec api alembic upgrade head`
-  5) Mark an admin (SQL example): 
+  5) Mark an admin (SQL example):
      UPDATE Users SET is_admin = 1 WHERE email = 'admin@example.com';
   6) Log in as admin in the UI. Use "New Work Order" to create; click a row to edit.
 

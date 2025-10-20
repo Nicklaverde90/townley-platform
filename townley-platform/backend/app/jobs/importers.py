@@ -1,4 +1,6 @@
-import csv, io, json
+import csv
+import io
+import json
 from typing import Any, Dict
 from sqlalchemy.orm import Session
 from app.core.db import SessionLocal
@@ -6,10 +8,12 @@ from app.models.workorders import WorkOrders
 from app.models.workorder_audit import WorkOrderAudit
 from rq import get_current_job
 
+
 def _set_progress(job, value: int):
     if job:
         job.meta["progress"] = value
         job.save_meta()
+
 
 def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
     job = get_current_job()
@@ -25,19 +29,25 @@ def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
         rows = list(reader)
         total = len(rows)
         for idx, row in enumerate(rows, start=1):
+            raw_record = row.get("RecordNo")
             try:
-                record_no = int(row.get("RecordNo"))
-            except Exception as e:
+                record_no = int(raw_record) if raw_record is not None else None
+            except (TypeError, ValueError):
+                record_no = None
+            if record_no is None:
                 errors.append(f"Row {idx}: invalid RecordNo")
                 continue
             status = row.get("Status") or None
             desc = row.get("Description") or None
-            created = row.get("CreatedAt") or None
-
             wo = db.query(WorkOrders).filter(WorkOrders.RecordNo == record_no).first()
             before = None
             if wo:
-                before = {"RecordNo": wo.RecordNo, "Status": wo.Status, "Description": wo.Description, "CreatedAt": str(wo.CreatedAt) if wo.CreatedAt else None}
+                before = {
+                    "RecordNo": wo.RecordNo,
+                    "Status": wo.Status,
+                    "Description": wo.Description,
+                    "CreatedAt": str(wo.CreatedAt) if wo.CreatedAt else None,
+                }
                 wo.Status = status
                 wo.Description = desc
                 upserts += 1
@@ -66,7 +76,7 @@ def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
             if idx % 50 == 0:
                 db.commit()
             if total:
-                _set_progress(job, int(1 + (idx/total)*98))
+                _set_progress(job, int(1 + (idx / total) * 98))
         db.commit()
     finally:
         db.close()

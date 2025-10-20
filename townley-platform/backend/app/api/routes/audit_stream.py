@@ -14,7 +14,9 @@ from app.models.workorder_audit import WorkOrderAudit
 router = APIRouter(prefix="/api/audit", tags=["audit"])
 
 
-async def sse_event_generator(db: Session, since_id: Optional[int], poll: float) -> AsyncGenerator[str, None]:
+async def sse_event_generator(
+    db: Session, since_id: Optional[int], poll: float
+) -> AsyncGenerator[str, None]:
     last_id = since_id
     if last_id is None:
         latest = db.query(WorkOrderAudit).order_by(desc(WorkOrderAudit.id)).first()
@@ -23,10 +25,10 @@ async def sse_event_generator(db: Session, since_id: Optional[int], poll: float)
         while True:
             rows = (
                 db.query(WorkOrderAudit)
-                    .filter(WorkOrderAudit.id > last_id)
-                    .order_by(WorkOrderAudit.id.asc())
-                    .limit(200)
-                    .all()
+                .filter(WorkOrderAudit.id > last_id)
+                .order_by(WorkOrderAudit.id.asc())
+                .limit(200)
+                .all()
             )
             for r in rows:
                 last_id = r.id

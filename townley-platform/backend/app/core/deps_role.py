@@ -18,7 +18,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 def _decode_token(token: str) -> str:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         sub: Optional[str] = payload.get("sub")
         exp: Optional[int] = payload.get("exp")
         if not sub or not exp or datetime.now(timezone.utc).timestamp() > float(exp):
@@ -32,26 +34,36 @@ def _decode_token(token: str) -> str:
         ) from exc
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+) -> User:
     email = _decode_token(token)
     user = db.query(User).filter(User.email == email).first()
     if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive or missing user")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive or missing user"
+        )
     return user
 
 
 def require_role(min_role: Role):
     def dep(user: User = Depends(get_current_user)) -> User:
         if not role_at_least(getattr(user, "role", "viewer"), min_role.value):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient role")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient role"
+            )
         return user
 
     return dep
 
 
-def user_from_query_token(token: str = Query(...), db: Session = Depends(get_db)) -> User:
+def user_from_query_token(
+    token: str = Query(...), db: Session = Depends(get_db)
+) -> User:
     email = _decode_token(token)
     user = db.query(User).filter(User.email == email).first()
     if not user or not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive or missing user")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive or missing user"
+        )
     return user

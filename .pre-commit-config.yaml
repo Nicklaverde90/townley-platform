@@ -8,6 +8,7 @@ repos:
       - id: check-added-large-files
       - id: check-yaml
       - id: check-json
+        exclude: "(?x)^(\n  apps/web/tsconfig.*\\.json$\n  |townley-platform/frontend/tsconfig.*\\.json$\n)$"
 
   - repo: https://github.com/psf/black
     rev: 24.10.0
@@ -34,3 +35,4 @@ repos:
           - --ignore-missing-imports
         additional_dependencies:
           - sqlalchemy2-stubs
+          - types-redis
