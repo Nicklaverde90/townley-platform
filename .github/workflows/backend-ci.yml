@@ -37,6 +37,12 @@ jobs:
       - name: Run pre-commit
         run: pre-commit run --show-diff-on-failure --all-files
 
-      - name: Run pytest
+      - name: Run pytest (skip if no tests)
         working-directory: townley-platform/backend
-        run: pytest
+        run: |
+          pytest || status=$?
+          if [ "${status:-0}" -eq 5 ]; then
+            echo "pytest reported exit code 5 (no tests collected); treating as success."
+            exit 0
+          fi
+          exit "${status:-0}"
