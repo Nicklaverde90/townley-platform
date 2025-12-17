@@ -1,24 +1,28 @@
-# Node / Vite
-client/node_modules/
-client/dist/
-client/.vite/
+# Node / JS
+**/node_modules/
+**/dist/
+**/.vite/
+**/.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Python
-backend/.venv/
-backend/__pycache__/
-backend/.mypy_cache/
-backend/.pytest_cache/
-backend/.ruff_cache/
-
-# Bytecode / OS
-*.pyc
-.DS_Store
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
 
 # Env & secrets (managed in CI or vault)
-.env
-.env.*
-backend/.env
-client/.env
+.env*
+!**/.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
 
 # Docker artifacts
 *.log
@@ -27,5 +31,3 @@ client/.env
 # Build artifacts
 coverage/
 build/
-
-node_modules/
