@@ -1,0 +1,18 @@
+services:
+  api:
+    build: ../../backend
+    env_file: ../../backend/.env
+  web:
+    build: ../../frontend
+    volumes:
+      - web_dist:/out
+    depends_on: [api]
+  nginx:
+    image: nginx:1.27
+    volumes:
+      - ../../../infra/nginx/default.conf:/etc/nginx/nginx.conf:ro
+      - web_dist:/usr/share/nginx/html:ro
+    ports: ["80:80"]
+    depends_on: [web, api]
+volumes:
+  web_dist:
