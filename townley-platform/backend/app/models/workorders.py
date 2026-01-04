@@ -1,18 +1,39 @@
-from __future__ import annotations
-
-from datetime import datetime
-
-from sqlalchemy import Column, DateTime, Integer, String, Text, func
-
-from .base import Base
+from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean
+from sqlalchemy.sql import func
+from app.core.db import Base
 
 
-class WorkOrders(Base):
-    __tablename__ = "work_orders"
+class WorkOrder(Base):
+    __tablename__ = "WorkOrders"   # real SQL table name
 
-    RecordNo = Column(Integer, primary_key=True, autoincrement=True)
-    Status = Column(String(50), nullable=True)
-    Description = Column(Text, nullable=True)
+    # Primary Key
+    RecordNo = Column(Integer, primary_key=True, index=True)
+
+    # Timestamps
     CreatedAt = Column(
-        DateTime(timezone=True), server_default=func.now(), default=datetime.utcnow
+        DateTime,
+        server_default=func.now(),
+        nullable=True,
+        index=True,
     )
+
+    # Core fields
+    WorkOrderNo = Column(String)
+    PartNo = Column(String)
+    CustomerName = Column(String)
+    AlloyCode = Column(String)
+    QtyRequired = Column(Integer)
+    RushDueDate = Column(Date)
+    SerialNo = Column(String)
+    StatusNotes = Column(String)
+
+    # Process flags
+    MoldingFinished = Column(Boolean)
+    PouringFinished = Column(Boolean)
+    HeatTreatFinished = Column(Boolean)
+    MachiningFinished = Column(Boolean)
+    AssemblyFinished = Column(Boolean)
+    FinalInspComp = Column(Boolean)
+
+    # Status
+    Status = Column(String)

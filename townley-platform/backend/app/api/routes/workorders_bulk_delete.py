@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.admin_deps import require_admin  # admin-only
-from app.models.workorders import WorkOrders
+from app.models.workorders import WorkOrder
 from app.models.workorder_audit import WorkOrderAudit
 from app.core.deps import get_current_user
 
@@ -21,7 +21,7 @@ def hard_delete_bulk(
     # Delete in chunks to avoid locks
     deleted = 0
     for rec in record_nos:
-        obj = db.query(WorkOrders).filter(WorkOrders.RecordNo == rec).first()
+        obj = db.query(WorkOrder).filter(WorkOrder.RecordNo == rec).first()
         if obj:
             db.delete(obj)
             db.add(

@@ -4,7 +4,16 @@ FROM node:22.12.0-alpine AS build
 WORKDIR /app
 # Install dependencies
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN set -eux;     if [ -f package-lock.json ]; then npm ci;     elif [ -f pnpm-lock.yaml ]; then corepack enable && pnpm i --frozen-lockfile;     elif [ -f yarn.lock ]; then yarn install --frozen-lockfile;     else npm i; fi
+RUN set -eux; \
+    if [ -f package-lock.json ]; then \
+        npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then \
+        corepack enable && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then \
+        yarn install --frozen-lockfile; \
+    else \
+        npm install; \
+    fi
 # Copy sources and build
 COPY . .
 RUN npm run build

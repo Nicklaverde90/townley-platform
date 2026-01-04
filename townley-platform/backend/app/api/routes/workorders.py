@@ -5,7 +5,7 @@ from sqlalchemy import or_, asc, desc
 from app.core.db import get_db
 from app.core.deps import get_current_user
 from app.core.admin_deps import require_admin
-from app.models.workorders import WorkOrders
+from app.models.workorders import WorkOrder
 from app.schemas.workorders import (
     WorkOrderListResponse,
     WorkOrderRead,
@@ -26,16 +26,16 @@ def list_workorders(
     db: Session = Depends(get_db),
     _user=Depends(get_current_user),
 ):
-    query = db.query(WorkOrders)
+    query = db.query(WorkOrder)
     if q:
         q_like = f"%{q}%"
-        conditions = [WorkOrders.Description.ilike(q_like)]
+        conditions = [WorkOrder.Description.ilike(q_like)]
         if q.isdigit():
-            conditions.append(WorkOrders.RecordNo == int(q))
+            conditions.append(WorkOrder.RecordNo == int(q))
         query = query.filter(or_(*conditions))
     total = query.count()
 
-    order_col = WorkOrders.RecordNo if sort_by == "RecordNo" else WorkOrders.CreatedAt
+    order_col = WorkOrder.RecordNo if sort_by == "RecordNo" else WorkOrder.CreatedAt
     order_func = asc if sort_dir == "asc" else desc
     items = (
         query.order_by(order_func(order_col))
@@ -59,7 +59,7 @@ def create_workorder(
     db: Session = Depends(get_db),
     _admin=Depends(require_admin),
 ):
-    wo = WorkOrders(Status=payload.Status, Description=payload.Description)
+    wo = WorkOrder(Status=payload.Status, Description=payload.Description)
     db.add(wo)
     db.commit()
     db.refresh(wo)
@@ -73,7 +73,7 @@ def update_workorder(
     db: Session = Depends(get_db),
     _admin=Depends(require_admin),
 ):
-    wo = db.query(WorkOrders).filter(WorkOrders.RecordNo == record_no).first()
+    wo = db.query(WorkOrder).filter(WorkOrder.RecordNo == record_no).first()
     if not wo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Work order not found"

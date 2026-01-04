@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.admin_deps import require_admin
 from app.core.db import get_db
 from app.core.deps import get_current_user
-from app.models.workorders import WorkOrders
+from app.models.workorders import WorkOrder
 from app.schemas.workorders import WorkOrderListResponse
 
 router = APIRouter(prefix="/api/workorders", tags=["workorders"])
@@ -25,18 +25,18 @@ def list_workorders(
     db: Session = Depends(get_db),
     _user=Depends(get_current_user),
 ) -> WorkOrderListResponse:
-    query = db.query(WorkOrders)
+    query = db.query(WorkOrder)
     if not include_deleted:
-        query = query.filter(WorkOrders.DeletedAt.is_(None))
+        query = query.filter(WorkOrder.DeletedAt.is_(None))
     if q:
         q_like = f"%{q}%"
-        conditions = [WorkOrders.Description.ilike(q_like)]
+        conditions = [WorkOrder.Description.ilike(q_like)]
         if q.isdigit():
-            conditions.append(WorkOrders.RecordNo == int(q))
+            conditions.append(WorkOrder.RecordNo == int(q))
         query = query.filter(or_(*conditions))
     total = query.count()
     items = (
-        query.order_by(WorkOrders.RecordNo.desc())
+        query.order_by(WorkOrder.RecordNo.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -53,8 +53,8 @@ def delete_workorder(
     _admin=Depends(require_admin),
 ) -> None:
     wo = (
-        db.query(WorkOrders)
-        .filter(WorkOrders.RecordNo == record_no, WorkOrders.DeletedAt.is_(None))
+        db.query(WorkOrder)
+        .filter(WorkOrder.RecordNo == record_no, WorkOrder.DeletedAt.is_(None))
         .first()
     )
     if not wo:
@@ -73,8 +73,8 @@ def restore_workorder(
     _admin=Depends(require_admin),
 ) -> None:
     wo = (
-        db.query(WorkOrders)
-        .filter(WorkOrders.RecordNo == record_no, WorkOrders.DeletedAt.is_not(None))
+        db.query(WorkOrder)
+        .filter(WorkOrder.RecordNo == record_no, WorkOrder.DeletedAt.is_not(None))
         .first()
     )
     if not wo:
@@ -120,9 +120,9 @@ async def import_csv(
                 except ValueError:
                     continue
 
-        wo = db.query(WorkOrders).filter(WorkOrders.RecordNo == record_no).first()
+        wo = db.query(WorkOrder).filter(WorkOrder.RecordNo == record_no).first()
         if not wo:
-            wo = WorkOrders(RecordNo=record_no)
+            wo = WorkOrder(RecordNo=record_no)
         wo.Status = status_value
         wo.Description = desc_value
         if created_dt:

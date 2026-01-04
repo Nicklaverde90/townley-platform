@@ -1,0 +1,33 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: townley-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "developer"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./init:/docker-init:ro
+      - ../working:/working:ro
+      - ./start.sh:/docker-start.sh:ro
+
+    # Shell-free healthcheck (no Bash, no history expansion, no quoting bugs)
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-C",
+          "-S", "localhost",
+          "-U", "sa",
+          "-P", "${MSSQL_SA_PASSWORD}",
+          "-Q", "SELECT 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+    command: ["/docker-start.sh"]

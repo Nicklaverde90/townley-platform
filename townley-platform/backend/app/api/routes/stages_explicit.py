@@ -9,13 +9,13 @@ from app.core.db import get_db
 from app.core.deps_role import require_role
 from app.core.roles import Role
 from app.models.workorder_audit import WorkOrderAudit
-from app.models.workorders import WorkOrders
+from app.models.workorders import WorkOrder
 
 router = APIRouter(tags=["stages"])
 
 
-def _find_workorder_or_404(db: Session, record_no: int) -> WorkOrders:
-    wo = db.query(WorkOrders).filter(WorkOrders.RecordNo == record_no).first()
+def _find_workorder_or_404(db: Session, record_no: int) -> WorkOrder:
+    wo = db.query(WorkOrder).filter(WorkOrder.RecordNo == record_no).first()
     if not wo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Work order not found"
@@ -44,7 +44,7 @@ def _handle_stage(
         raise HTTPException(status_code=422, detail="recordNo is required")
     record_no = int(payload["recordNo"])
     _find_workorder_or_404(db, record_no)
-    # Business logic placeholder: upsert into a stage table or attach to WorkOrders as needed.
+    # Business logic placeholder: upsert into a stage table or attach to WorkOrder as needed.
     # For now we just audit the submission.
     fields = {k: v for k, v in payload.items() if k != "recordNo"}
     _write_audit(db, record_no, user_email, stage, fields)

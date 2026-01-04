@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict
 from sqlalchemy.orm import Session
 from app.core.db import SessionLocal
-from app.models.workorders import WorkOrders
+from app.models.workorders import WorkOrder
 from app.models.workorder_audit import WorkOrderAudit
 from rq import get_current_job
 
@@ -37,10 +37,13 @@ def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
             if record_no is None:
                 errors.append(f"Row {idx}: invalid RecordNo")
                 continue
+
             status = row.get("Status") or None
             desc = row.get("Description") or None
-            wo = db.query(WorkOrders).filter(WorkOrders.RecordNo == record_no).first()
+
+            wo = db.query(WorkOrder).filter(WorkOrder.RecordNo == record_no).first()
             before = None
+
             if wo:
                 before = {
                     "RecordNo": wo.RecordNo,
@@ -53,11 +56,13 @@ def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
                 upserts += 1
                 action = "update"
             else:
-                wo = WorkOrders(RecordNo=record_no, Status=status, Description=desc)
+                wo = WorkOrder(RecordNo=record_no, Status=status, Description=desc)
                 db.add(wo)
                 upserts += 1
                 action = "create"
+
             db.flush()
+
             audit = WorkOrderAudit(
                 action=action,
                 record_no=record_no,
@@ -73,12 +78,16 @@ def import_workorders_csv(file_bytes: bytes, user_email: str) -> Dict[str, Any]:
                 user_email=user_email,
             )
             db.add(audit)
+
             if idx % 50 == 0:
                 db.commit()
+
             if total:
                 _set_progress(job, int(1 + (idx / total) * 98))
+
         db.commit()
     finally:
         db.close()
+
     _set_progress(job, 100)
     return {"total": total, "upserts": upserts, "errors": errors}

@@ -13,7 +13,7 @@ RUN apt-get update \
         apt-transport-https \
         ca-certificates \
     && curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg \
-    && echo "deb [arch=amd64] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list \
+    && printf 'deb [arch=amd64] https://packages.microsoft.com/debian/12/prod bookworm main\n' > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends \
         msodbcsql18 \

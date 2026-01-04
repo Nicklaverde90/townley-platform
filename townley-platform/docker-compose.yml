@@ -1,12 +1,64 @@
 services:
+  townley_mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: townley_mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=Express
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - townley_mssql_data:/var/opt/mssql
+      - ./db/sql:/scripts:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  db_init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      townley_mssql:
+        condition: service_healthy
+    environment:
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+    volumes:
+      - ./db/sql:/scripts:ro
+    entrypoint: ["bash","-lc"]
+    command:
+      - |
+        set -e
+        echo "Waiting for SQL Server..."
+        for i in {1..60}; do
+          /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" && break
+          sleep 2
+        done
+
+        echo "Running deploy + api views + procs + parity..."
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d master -i /scripts/townley_deploy_end_to_end.sql
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d NewDB1 -i /scripts/townley_platform_support_objects.sql
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d NewDB1 -i /scripts/townley_api_views_fastapi_exact.sql
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d NewDB1 -i /scripts/townley_platform_api_write_procs.sql
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d NewDB1 -i /scripts/townley_api_users_table.sql
+        /opt/mssql-tools18/bin/sqlcmd -S townley_mssql -U sa -P "$MSSQL_SA_PASSWORD" -C -d NewDB1 -i /scripts/parity_legacy_full.sql
+        echo "DB init complete."
+
   api:
     build: ./backend
     env_file: ./backend/.env
+    depends_on: [townley_mssql, db_init]
+
   web:
     build: ./frontend
     volumes:
       - web_dist:/out
     depends_on: [api]
+
   nginx:
     image: nginx:1.27
     volumes:
@@ -14,5 +66,7 @@ services:
       - web_dist:/usr/share/nginx/html:ro
     ports: ["80:80"]
     depends_on: [web, api]
+
 volumes:
   web_dist:
+  townley_mssql_data:
